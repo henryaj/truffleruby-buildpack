@@ -13,8 +13,13 @@ if ! has_gemfile_lock "$BUILD_DIR"; then
   exit 1
 fi
 
+apt-get install -y openssl make clang
+
 install_graalvm
 install_truffleruby
+
+# recompile system openssl
+/tmp/graalvm/jre/languages/ruby/lib/truffle/post_install_hook.sh
 
 gem install bundler
 
