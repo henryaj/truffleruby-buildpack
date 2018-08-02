@@ -2,6 +2,8 @@
 
 set -e
 
+set -x
+
 BP_DIR=$(cd $(dirname $0)/..; pwd)
 BUILD_DIR=$1
 CACHE_DIR=$2
