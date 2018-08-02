@@ -12,3 +12,16 @@ install_graalvm() {
 install_truffleruby() {
   gu install ruby
 }
+
+has_gemfile_lock() {
+  local buildDir=${1}
+  test -f ${buildDir}/Gemfile.lock
+}
+
+write_graalvm_profile() {
+  local home=${1}
+  mkdir -p ${home}/.profile.d
+  cat << EOF > ${home}/.profile.d/graal.sh
+export PATH="/tmp/graalvm/bin:\$PATH"
+EOF
+}

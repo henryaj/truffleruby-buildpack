@@ -1,4 +1,46 @@
 #!/usr/bin/env bash
 
-echo "oh no"
-exit 99
+BUILD_DIR=$1
+
+is_rack_app() {
+  local buildDir=${1}
+  test -f ${buildDir}/config.ru
+}
+
+is_rails_app() {
+  local buildDir=${1}
+  test -n "$(grep "gem 'railties'" ${buildDir}/Gemfile)" ||
+  test -n "$(grep "gem \"railties\"" ${buildDir}/Gemfile)"
+
+}
+
+has_postgres() {
+  local buildDir=${1}
+  test -f ${buildDir}/Gemfile && (
+    test -n "$(grep "gem 'pg'" ${buildDir}/Gemfile)" ||
+    test -n "$(grep "gem \"pg\"" ${buildDir}/Gemfile)")
+}
+
+echo "---"
+
+if has_postgres $BUILD_DIR; then
+  cat <<EOF
+addons:
+  - heroku-postgresql
+EOF
+fi
+
+if [ ! -f $BUILD_DIR/Procfile ]; then
+  if is_rack_app $BUILD_DIR; then
+    echo "default_process_types:"
+    echo "  web: bundle exec rackup -p $PORT -e RACK_ENV:production"
+  elif is_rails_app $BUILD_DIR; then
+    echo "default_process_types:"
+    echo "  web: bundle exec rails server -p $PORT -e RAILS_ENV:production"
+    echo "  console: bundle exec rails console -e RAILS_ENV:production"
+  else
+    echo "default_process_types:"
+    echo "  rake: bundle exec rake"
+    echo "  console: bundle exec irb"
+  fi
+fi

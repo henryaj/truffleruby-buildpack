@@ -5,7 +5,14 @@ BP_DIR=$(cd $(dirname $0)/..; pwd)
 # shellcheck source=../lib/common.sh
 source "${BP_DIR}"/lib/common.sh
 
+if ! has_gemfile_lock $BUILD_DIR; then
+  echo "No Gemfile.lock found -- aborting. Re-push your app with a valid Gemfile.lock."
+  exit 1
+fi
+
 install_graalvm
 install_truffleruby
 
-
+pushd $BUILD_DIR > /dev/null
+  bundle
+popd > /dev/null
