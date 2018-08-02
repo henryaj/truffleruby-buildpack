@@ -33,13 +33,20 @@ apt-get update
 apt-get install -y openssl make clang llvm libssl-dev
 
 install_graalvm
-install_truffleruby
+install_trufflelangs
 
 # recompile system openssl
 /tmp/graalvm/jre/languages/ruby/lib/truffle/post_install_hook.sh
 
-gem install bundler
+if has_gemfile_lock "$BUILD_DIR"; then
+  echo "       Ruby app detected."
+  gem install bundler
 
-pushd $BUILD_DIR > /dev/null
-  bundle
-popd > /dev/null
+  pushd $BUILD_DIR > /dev/null
+    bundle
+  popd > /dev/null
+  exit 0
+else
+  echo "       Nothing to do. Exiting."
+  exit 1
+fi

@@ -9,8 +9,9 @@ install_graalvm() {
   export PATH=/tmp/graalvm/bin:$PATH
 }
 
-install_truffleruby() {
-  gu install ruby
+install_trufflelangs() {
+  gu install ruby python R
+  gu rebuild-images polyglot
 }
 
 has_gemfile_lock() {
