@@ -24,13 +24,8 @@ APT_OPTIONS="$APT_OPTIONS -o dir::etc::sourcelist=$APT_SOURCES"
 # shellcheck source=../lib/common.sh
 source "${BP_DIR}"/lib/common.sh
 
-if ! has_gemfile_lock "$BUILD_DIR"; then
-  echo "No Gemfile.lock found -- aborting. Re-push your app with a valid Gemfile.lock."
-  exit 1
-fi
-
-apt-get update
-apt-get install -y openssl make clang llvm libssl-dev
+apt-get "$APT_OPTIONS" update
+apt-get "$APT_OPTIONS" install -y openssl make clang llvm libssl-dev
 
 install_graalvm
 install_trufflelangs
