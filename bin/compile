@@ -14,7 +14,7 @@ if ! has_gemfile_lock "$BUILD_DIR"; then
 fi
 
 apt-get update
-apt-get install -y openssl make clang
+apt-get install -y openssl make clang llvm libssl-dev
 
 install_graalvm
 install_truffleruby
