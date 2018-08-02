@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 BP_DIR=$(cd $(dirname $0)/..; pwd)
 BUILD_DIR=$1
 
@@ -13,6 +15,8 @@ fi
 
 install_graalvm
 install_truffleruby
+
+gem install bundler
 
 pushd $BUILD_DIR > /dev/null
   bundle
