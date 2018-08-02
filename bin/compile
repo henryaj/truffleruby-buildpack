@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 
 BP_DIR=$(cd $(dirname $0)/..; pwd)
+BUILD_DIR=$1
 
 # shellcheck source=../lib/common.sh
 source "${BP_DIR}"/lib/common.sh
 
-if ! has_gemfile_lock $BUILD_DIR; then
+if ! has_gemfile_lock "$BUILD_DIR"; then
   echo "No Gemfile.lock found -- aborting. Re-push your app with a valid Gemfile.lock."
   exit 1
 fi
