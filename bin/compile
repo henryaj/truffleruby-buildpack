@@ -29,13 +29,24 @@ APT_OPTIONS="-o debug::nolocking=true -o dir::cache=$APT_CACHE_DIR -o dir::state
 APT_OPTIONS="$APT_OPTIONS -o dir::etc::sourcelist=$APT_SOURCES"
 
 apt-get $APT_OPTIONS update
-apt-get $APT_OPTIONS -y --force-yes -d install openssl make clang llvm libssl-dev
+apt-get $APT_OPTIONS -y --force-yes -d install openssl make clang llvm libssl-dev git
 
 install_graalvm
 install_trufflelangs
 
 # recompile system openssl
 /tmp/graalvm/jre/languages/ruby/lib/truffle/post_install_hook.sh
+
+# install rbenv
+curl -fsSL https://github.com/rbenv/rbenv-installer/raw/master/bin/rbenv-installer | bash
+
+eval "$(rbenv init -)"
+export PATH=~/.rbenv/bin:$PATH
+export RBENV_ROOT=~/.rbenv
+rbenv rehash
+mkdir -p "$RBENV_ROOT/versions"
+ln -s /tmp/graalvm/jre/languages/ruby "$RBENV_ROOT/versions/truffleruby"
+rbenv global truffleruby
 
 if has_gemfile_lock "$BUILD_DIR"; then
   echo "       Ruby app detected."

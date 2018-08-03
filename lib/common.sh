@@ -10,8 +10,7 @@ install_graalvm() {
 }
 
 install_trufflelangs() {
-  gu install ruby python R
-  gu rebuild-images polyglot
+  gu install ruby
 }
 
 has_gemfile_lock() {
