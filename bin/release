@@ -33,10 +33,10 @@ fi
 if [ ! -f $BUILD_DIR/Procfile ]; then
   if is_rack_app $BUILD_DIR; then
     echo "default_process_types:"
-    echo "  web: bundle exec rackup -p $PORT -e RACK_ENV:production"
+    echo '  web: bundle exec rackup -p $PORT -e RACK_ENV:production'
   elif is_rails_app $BUILD_DIR; then
     echo "default_process_types:"
-    echo "  web: bundle exec rails server -p $PORT -e RAILS_ENV:production"
+    echo '  web: bundle exec rails server -p $PORT -e RAILS_ENV:production'
     echo "  console: bundle exec rails console -e RAILS_ENV:production"
   else
     echo "default_process_types:"
