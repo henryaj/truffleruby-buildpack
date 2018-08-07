@@ -22,6 +22,10 @@ cp .profile.d/graal_env "$BUILD_DIR/.profile.d"
 
 ./bin/install_binaries "$BUILD_DIR" "$CACHE_DIR"
 
+# source env vars from install_binaries script
+LP_DIR=`cd $(dirname $0); cd ..; pwd`
+source "$LP_DIR/export"
+
 install_graalvm
 install_trufflelangs
 
