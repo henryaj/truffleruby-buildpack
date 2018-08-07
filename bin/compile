@@ -36,8 +36,9 @@ install_trufflelangs
 curl -fsSL https://github.com/rbenv/rbenv-installer/raw/master/bin/rbenv-installer | bash
 
 eval "$(rbenv init -)"
-export PATH=~/.rbenv/bin:$PATH
-export RBENV_ROOT=~/.rbenv
+export PATH=/app/.rbenv/bin:$PATH
+export RBENV_ROOT=/app/.rbenv
+
 rbenv rehash
 mkdir -p "$RBENV_ROOT/versions"
 ln -s /tmp/graalvm/jre/languages/ruby "$RBENV_ROOT/versions/truffleruby"
