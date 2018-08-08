@@ -33,13 +33,20 @@ install_trufflelangs
 /tmp/graalvm/jre/languages/ruby/lib/truffle/post_install_hook.sh
 
 # install rbenv
-curl -fsSL https://github.com/rbenv/rbenv-installer/raw/master/bin/rbenv-installer | bash
+mkdir -p /app/.rbenv
+pushd /app/.rbenv > /dev/null
+  git init
+  git remote add origin https://github.com/rbenv/rbenv.git
+  git checkout -b master
+  git pull origin master
+popd
 
-eval "$(rbenv init -)"
 export PATH=/app/.rbenv/bin:$PATH
 export RBENV_ROOT=/app/.rbenv
 
+eval "$(rbenv init -)"
 rbenv rehash
+
 mkdir -p "$RBENV_ROOT/versions"
 ln -s /tmp/graalvm/jre/languages/ruby "$RBENV_ROOT/versions/truffleruby"
 rbenv global truffleruby
