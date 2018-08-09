@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 export PATH=/tmp/graalvm/bin:$PATH
-
 eval "$(rbenv init -)"
-export PATH=~/.rbenv/bin:$PATH
-rbenv rehash
+
+export PATH=/app/.rbenv/bin:PATH
+export PATH=/app/.rbenv/shims:PATH
