@@ -78,7 +78,11 @@ if has_gemfile_lock "$BUILD_DIR"; then
     gem install bundler --no-document
 
     pushd "$BUILD_DIR" > /dev/null
-        bundle install --deployment --without development:test
+        # Configure bundler for deployment
+        bundle config set --local deployment true
+        bundle config set --local without development:test
+        bundle config set --local path vendor/bundle
+        bundle install
     popd > /dev/null
 
     log_step "Dependencies installed successfully"
