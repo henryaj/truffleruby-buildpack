@@ -3,16 +3,13 @@
 # TruffleRuby runtime environment setup
 # Note: At runtime, $HOME is /app on Heroku
 
-# TruffleRuby setup
+# TruffleRuby setup - add bin directory to PATH
 export TRUFFLERUBY_HOME="${HOME}/.truffleruby"
-export PATH="${TRUFFLERUBY_HOME}/bin:$PATH"
+export GEM_HOME="${HOME}/vendor/bundle/truffleruby/3.2.0"
+export GEM_PATH="${GEM_HOME}:${TRUFFLERUBY_HOME}/lib/ruby/gems/3.2.0"
+export PATH="${GEM_HOME}/bin:${TRUFFLERUBY_HOME}/bin:$PATH"
 
-# rbenv setup
-export RBENV_ROOT="${HOME}/.rbenv"
-export PATH="${RBENV_ROOT}/bin:$PATH"
-export PATH="${RBENV_ROOT}/shims:$PATH"
-
-# Initialize rbenv if available
-if command -v rbenv &>/dev/null; then
-    eval "$(rbenv init - --no-rehash)"
+# Also add rbenv shims if they exist
+if [[ -d "${HOME}/.rbenv/shims" ]]; then
+    export PATH="${HOME}/.rbenv/shims:$PATH"
 fi
