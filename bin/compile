@@ -37,12 +37,13 @@ if [[ -f "${BP_DIR}/export" ]]; then
     source "${BP_DIR}/export"
 fi
 
-# Install TruffleRuby
-install_truffleruby
+# Install TruffleRuby to the app directory (persists at runtime)
+TRUFFLERUBY_HOME="${BUILD_DIR}/.truffleruby"
+install_truffleruby "$TRUFFLERUBY_HOME"
 
 # Install rbenv for Ruby version management
 log_info "Installing rbenv"
-RBENV_ROOT="/app/.rbenv"
+RBENV_ROOT="${BUILD_DIR}/.rbenv"
 mkdir -p "$RBENV_ROOT"
 
 pushd "$RBENV_ROOT" > /dev/null

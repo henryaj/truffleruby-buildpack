@@ -1,17 +1,18 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
-
 # TruffleRuby runtime environment setup
-export TRUFFLERUBY_HOME="${TRUFFLERUBY_HOME:-/tmp/truffleruby}"
+# Note: At runtime, $HOME is /app on Heroku
+
+# TruffleRuby setup
+export TRUFFLERUBY_HOME="${HOME}/.truffleruby"
 export PATH="${TRUFFLERUBY_HOME}/bin:$PATH"
 
 # rbenv setup
-export RBENV_ROOT="/app/.rbenv"
+export RBENV_ROOT="${HOME}/.rbenv"
 export PATH="${RBENV_ROOT}/bin:$PATH"
 export PATH="${RBENV_ROOT}/shims:$PATH"
 
 # Initialize rbenv if available
 if command -v rbenv &>/dev/null; then
-    eval "$(rbenv init -)"
+    eval "$(rbenv init - --no-rehash)"
 fi

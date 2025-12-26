@@ -9,7 +9,7 @@ set -euo pipefail
 TRUFFLERUBY_VERSION="${TRUFFLERUBY_VERSION:-24.1.1}"
 TRUFFLERUBY_VARIANT="${TRUFFLERUBY_VARIANT:-community}"
 TRUFFLERUBY_ARCH="${TRUFFLERUBY_ARCH:-linux-amd64}"
-TRUFFLERUBY_HOME="${TRUFFLERUBY_HOME:-/tmp/truffleruby}"
+# Note: TRUFFLERUBY_HOME should be set by the caller to install to the app directory
 
 # Logging functions
 log_info() {
@@ -44,7 +44,7 @@ get_truffleruby_url() {
 
 # Install TruffleRuby standalone distribution
 install_truffleruby() {
-    local install_dir="${1:-$TRUFFLERUBY_HOME}"
+    local install_dir="${1:?install directory required}"
     local download_url
 
     download_url="$(get_truffleruby_url)"
