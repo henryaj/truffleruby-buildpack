@@ -1,7 +1,17 @@
 #!/usr/bin/env bash
 
-export PATH=/tmp/graalvm/bin:$PATH
-eval "$(rbenv init -)"
+set -euo pipefail
 
-export PATH=/app/.rbenv/bin:PATH
-export PATH=/app/.rbenv/shims:PATH
+# TruffleRuby runtime environment setup
+export TRUFFLERUBY_HOME="${TRUFFLERUBY_HOME:-/tmp/truffleruby}"
+export PATH="${TRUFFLERUBY_HOME}/bin:$PATH"
+
+# rbenv setup
+export RBENV_ROOT="/app/.rbenv"
+export PATH="${RBENV_ROOT}/bin:$PATH"
+export PATH="${RBENV_ROOT}/shims:$PATH"
+
+# Initialize rbenv if available
+if command -v rbenv &>/dev/null; then
+    eval "$(rbenv init -)"
+fi

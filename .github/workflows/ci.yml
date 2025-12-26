@@ -1,0 +1,101 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run ShellCheck on bin scripts
+        uses: ludeeus/action-shellcheck@master
+        with:
+          scandir: './bin'
+          severity: warning
+        env:
+          SHELLCHECK_OPTS: -e SC1091
+
+      - name: Run ShellCheck on lib scripts
+        uses: ludeeus/action-shellcheck@master
+        with:
+          scandir: './lib'
+          severity: warning
+        env:
+          SHELLCHECK_OPTS: -e SC1091
+
+      - name: Run ShellCheck on profile scripts
+        uses: ludeeus/action-shellcheck@master
+        with:
+          scandir: './.profile.d'
+          severity: warning
+        env:
+          SHELLCHECK_OPTS: -e SC1091
+
+  bats:
+    name: BATS Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup BATS
+        uses: bats-core/bats-action@2.0.0
+
+      - name: Run Tests
+        run: bats test/
+
+  integration:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [shellcheck, bats]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Test detect script with Gemfile
+        run: |
+          mkdir -p /tmp/test-app
+          touch /tmp/test-app/Gemfile
+          output=$(./bin/detect /tmp/test-app)
+          if [ "$output" != "Ruby" ]; then
+            echo "Expected 'Ruby', got '$output'"
+            exit 1
+          fi
+
+      - name: Test detect script without Gemfile
+        run: |
+          mkdir -p /tmp/test-app-no-gemfile
+          if ./bin/detect /tmp/test-app-no-gemfile 2>/dev/null; then
+            echo "Expected detect to fail without Gemfile"
+            exit 1
+          fi
+
+      - name: Validate TruffleRuby download URL is accessible
+        run: |
+          source lib/common.sh
+          url=$(get_truffleruby_url)
+          echo "Testing URL: $url"
+          if ! curl --head --fail --silent --location "$url" > /dev/null; then
+            echo "Failed to access TruffleRuby download URL"
+            exit 1
+          fi
+          echo "URL is accessible"
+
+      - name: Test release script output format
+        run: |
+          mkdir -p /tmp/release-test
+          echo "gem 'rack'" > /tmp/release-test/Gemfile
+          touch /tmp/release-test/config.ru
+          output=$(./bin/release /tmp/release-test)
+          if [[ "$output" != "---"* ]]; then
+            echo "Expected YAML header"
+            exit 1
+          fi
+          if [[ "$output" != *"rackup"* ]]; then
+            echo "Expected rackup command for Rack app"
+            exit 1
+          fi

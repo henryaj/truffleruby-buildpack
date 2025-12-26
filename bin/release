@@ -1,46 +1,58 @@
 #!/usr/bin/env bash
+# bin/release <build-dir>
+# Generates release configuration for the application
 
-BUILD_DIR=$1
+set -euo pipefail
 
+BUILD_DIR="${1:?build directory required}"
+
+# Check if app is a Rack application
 is_rack_app() {
-  local buildDir=${1}
-  test -f ${buildDir}/config.ru
+    local build_dir="${1:?build_dir required}"
+    [[ -f "${build_dir}/config.ru" ]]
 }
 
+# Check if app is a Rails application
 is_rails_app() {
-  local buildDir=${1}
-  test -n "$(grep "gem 'railties'" ${buildDir}/Gemfile)" ||
-  test -n "$(grep "gem \"railties\"" ${buildDir}/Gemfile)"
-
+    local build_dir="${1:?build_dir required}"
+    [[ -f "${build_dir}/Gemfile" ]] && grep -qE "gem ['\"]railties['\"]" "${build_dir}/Gemfile"
 }
 
+# Check if app uses PostgreSQL
 has_postgres() {
-  local buildDir=${1}
-  test -f ${buildDir}/Gemfile && (
-    test -n "$(grep "gem 'pg'" ${buildDir}/Gemfile)" ||
-    test -n "$(grep "gem \"pg\"" ${buildDir}/Gemfile)")
+    local build_dir="${1:?build_dir required}"
+    [[ -f "${build_dir}/Gemfile" ]] && grep -qE "gem ['\"]pg['\"]" "${build_dir}/Gemfile"
 }
 
+# Output YAML header
 echo "---"
 
-if has_postgres $BUILD_DIR; then
-  cat <<EOF
+# Suggest PostgreSQL addon if pg gem is used
+if has_postgres "$BUILD_DIR"; then
+    cat <<EOF
 addons:
   - heroku-postgresql
 EOF
 fi
 
-if [ ! -f $BUILD_DIR/Procfile ]; then
-  if is_rack_app $BUILD_DIR; then
-    echo "default_process_types:"
-    echo '  web: bundle exec rackup -p $PORT -e RACK_ENV:production'
-  elif is_rails_app $BUILD_DIR; then
-    echo "default_process_types:"
-    echo '  web: bundle exec rails server -p $PORT -e RAILS_ENV:production'
-    echo "  console: bundle exec rails console -e RAILS_ENV:production"
-  else
-    echo "default_process_types:"
-    echo "  rake: bundle exec rake"
-    echo "  console: bundle exec irb"
-  fi
+# Generate default process types if no Procfile exists
+if [[ ! -f "${BUILD_DIR}/Procfile" ]]; then
+    if is_rails_app "$BUILD_DIR"; then
+        cat <<'EOF'
+default_process_types:
+  web: bundle exec rails server -p $PORT -e $RAILS_ENV
+  console: bundle exec rails console
+EOF
+    elif is_rack_app "$BUILD_DIR"; then
+        cat <<'EOF'
+default_process_types:
+  web: bundle exec rackup -p $PORT -E $RACK_ENV
+EOF
+    else
+        cat <<'EOF'
+default_process_types:
+  rake: bundle exec rake
+  console: bundle exec irb
+EOF
+    fi
 fi

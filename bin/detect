@@ -1,9 +1,20 @@
 #!/usr/bin/env bash
+# bin/detect <build-dir>
+# Detects if this buildpack should be used for the application
 
-if [ -f "$1/Gemfile" ]; then
-  echo "Ruby"
-  exit 0
+set -euo pipefail
+
+BUILD_DIR="${1:-}"
+
+if [[ -z "$BUILD_DIR" ]]; then
+    echo "no"
+    exit 1
+fi
+
+if [[ -f "${BUILD_DIR}/Gemfile" ]]; then
+    echo "Ruby"
+    exit 0
 else
-  echo "no"
-  exit 1
+    echo "no"
+    exit 1
 fi

@@ -1,64 +1,89 @@
 #!/usr/bin/env bash
+# bin/compile <build-dir> <cache-dir>
+# Compiles the application for deployment on Heroku
 
-set -e
+set -euo pipefail
 
-BP_DIR=$(cd $(dirname $0)/..; pwd)
-BUILD_DIR=$1
-CACHE_DIR=$2
+# Get buildpack directory
+BP_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+BUILD_DIR="${1:?build directory required}"
+CACHE_DIR="${2:?cache directory required}"
 
 # shellcheck source=../lib/common.sh
-source "${BP_DIR}"/lib/common.sh
+source "${BP_DIR}/lib/common.sh"
 
-echo "openssl
+# Write Aptfile for system dependencies
+log_info "Writing Aptfile for system dependencies"
+cat > "$BUILD_DIR/Aptfile" <<EOF
+openssl
 make
 clang
 llvm
 libssl-dev
-git" > "$BUILD_DIR/Aptfile"
+git
+EOF
 
+# Copy profile scripts
 mkdir -p "$BUILD_DIR/.profile.d"
-cp .profile.d/graal_env "$BUILD_DIR/.profile.d"
+cp "${BP_DIR}/.profile.d/graal_env" "$BUILD_DIR/.profile.d/"
 
-./bin/install_binaries "$BUILD_DIR" "$CACHE_DIR"
+# Install APT packages
+log_info "Installing system dependencies via APT"
+"${BP_DIR}/bin/install_binaries" "$BUILD_DIR" "$CACHE_DIR"
 
-# source env vars from install_binaries script
-LP_DIR=`cd $(dirname $0); cd ..; pwd`
-source "$LP_DIR/export"
+# Source environment variables from install_binaries script
+if [[ -f "${BP_DIR}/export" ]]; then
+    # shellcheck source=/dev/null
+    source "${BP_DIR}/export"
+fi
 
-install_graalvm
-install_trufflelangs
+# Install TruffleRuby
+install_truffleruby
 
-# recompile system openssl
-/tmp/graalvm/jre/languages/ruby/lib/truffle/post_install_hook.sh
+# Install rbenv for Ruby version management
+log_info "Installing rbenv"
+RBENV_ROOT="/app/.rbenv"
+mkdir -p "$RBENV_ROOT"
 
-# install rbenv
-mkdir -p /app/.rbenv
-pushd /app/.rbenv > /dev/null
-  git init
-  git remote add origin https://github.com/rbenv/rbenv.git
-  git checkout -b master
-  git pull origin master
-popd
+pushd "$RBENV_ROOT" > /dev/null
+    if [[ ! -d ".git" ]]; then
+        git init --quiet
+    fi
+    if ! git remote get-url origin &>/dev/null; then
+        git remote add origin https://github.com/rbenv/rbenv.git
+    fi
+    git fetch --depth 1 --quiet origin master || die "Failed to fetch rbenv"
+    git checkout -B master origin/master --quiet || die "Failed to checkout rbenv master"
+popd > /dev/null
 
-export PATH=/app/.rbenv/bin:$PATH
-export RBENV_ROOT=/app/.rbenv
+export PATH="${RBENV_ROOT}/bin:$PATH"
+export RBENV_ROOT
 
 eval "$(rbenv init -)"
 rbenv rehash
 
-mkdir -p "$RBENV_ROOT/versions"
-ln -s /tmp/graalvm/jre/languages/ruby "$RBENV_ROOT/versions/truffleruby"
+# Link TruffleRuby as an rbenv version
+mkdir -p "${RBENV_ROOT}/versions"
+if [[ -L "${RBENV_ROOT}/versions/truffleruby" ]]; then
+    rm "${RBENV_ROOT}/versions/truffleruby"
+fi
+ln -s "$TRUFFLERUBY_HOME" "${RBENV_ROOT}/versions/truffleruby"
 rbenv global truffleruby
 
-if has_gemfile_lock "$BUILD_DIR"; then
-  echo "       Ruby app detected."
-  gem install bundler
+log_step "Using TruffleRuby via rbenv"
 
-  pushd $BUILD_DIR > /dev/null
-    bundle
-  popd > /dev/null
-  exit 0
+# Install bundler and dependencies
+if has_gemfile_lock "$BUILD_DIR"; then
+    log_info "Installing Ruby dependencies"
+    gem install bundler --no-document
+
+    pushd "$BUILD_DIR" > /dev/null
+        bundle install --deployment --without development:test
+    popd > /dev/null
+
+    log_step "Dependencies installed successfully"
+    exit 0
 else
-  echo "       Nothing to do. Exiting."
-  exit 1
+    log_warn "No Gemfile.lock found - skipping bundle install"
+    exit 0
 fi
