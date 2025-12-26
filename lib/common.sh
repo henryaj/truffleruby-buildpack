@@ -7,7 +7,8 @@ set -euo pipefail
 
 # Configuration with defaults (can be overridden via environment variables)
 TRUFFLERUBY_VERSION="${TRUFFLERUBY_VERSION:-24.1.1}"
-TRUFFLERUBY_VARIANT="${TRUFFLERUBY_VARIANT:-community}"
+# Use JVM variant by default for better compatibility (native variant has glibc issues on some systems)
+TRUFFLERUBY_VARIANT="${TRUFFLERUBY_VARIANT:-community-jvm}"
 TRUFFLERUBY_ARCH="${TRUFFLERUBY_ARCH:-linux-amd64}"
 # Note: TRUFFLERUBY_HOME should be set by the caller to install to the app directory
 

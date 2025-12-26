@@ -42,8 +42,13 @@ Configure the buildpack using environment variables:
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `TRUFFLERUBY_VERSION` | `24.1.1` | TruffleRuby version to install |
-| `TRUFFLERUBY_VARIANT` | `community` | Distribution variant (`community` or `community-jvm`) |
+| `TRUFFLERUBY_VARIANT` | `community-jvm` | Distribution variant (`community` or `community-jvm`) |
 | `TRUFFLERUBY_ARCH` | `linux-amd64` | Target architecture |
+
+### Variants
+
+- **`community-jvm`** (default): Runs on the JVM. Better compatibility across Linux distributions. Slower cold start but better peak performance after warmup. Includes GraalVM JDK.
+- **`community`**: Native standalone image. Faster cold start but may have glibc compatibility issues on some systems (e.g., Heroku-24).
 
 ### Examples
 
@@ -51,8 +56,8 @@ Configure the buildpack using environment variables:
 # Use a specific TruffleRuby version
 heroku config:set TRUFFLERUBY_VERSION=24.0.0
 
-# Use JVM variant (slower startup, better peak performance)
-heroku config:set TRUFFLERUBY_VARIANT=community-jvm
+# Use native variant (faster startup, but may have compatibility issues)
+heroku config:set TRUFFLERUBY_VARIANT=community
 ```
 
 ## Compatibility
@@ -153,6 +158,16 @@ truffleruby-buildpack/
 Check that the TruffleRuby version exists. View available releases at:
 https://github.com/oracle/truffleruby/releases
 
+### "required file not found" or binary execution errors
+
+If you see errors like `cannot execute: required file not found` at runtime, this usually indicates glibc compatibility issues with the native variant. Switch to the JVM variant:
+
+```bash
+heroku config:set TRUFFLERUBY_VARIANT=community-jvm
+git commit --allow-empty -m "Trigger rebuild"
+git push heroku main
+```
+
 ### OpenSSL errors
 
 The buildpack automatically runs TruffleRuby's post-install hook to compile OpenSSL bindings. If you encounter SSL errors, ensure `libssl-dev` is available (it's included by default).
@@ -162,7 +177,7 @@ The buildpack automatically runs TruffleRuby's post-install hook to compile Open
 TruffleRuby may require more memory than MRI Ruby. Consider:
 
 - Using a larger dyno size
-- Using the `community` variant (native image, lower memory)
+- Using the `community` variant (native image, lower memory) if compatible with your system
 - Tuning JVM memory with `JAVA_OPTS` for the `community-jvm` variant
 
 ## License
