@@ -27,6 +27,17 @@ EOF
 mkdir -p "$BUILD_DIR/.profile.d"
 cp "${BP_DIR}/.profile.d/graal_env" "$BUILD_DIR/.profile.d/"
 
+# Also create a .profile file that sources our profile.d scripts
+# This is more reliable on newer Heroku stacks
+cat > "$BUILD_DIR/.profile" <<'PROFILE'
+# Source all .profile.d scripts
+for script in "$HOME/.profile.d"/*.sh; do
+    [ -f "$script" ] && source "$script"
+done
+# Also source our graal_env script explicitly
+[ -f "$HOME/.profile.d/graal_env" ] && source "$HOME/.profile.d/graal_env"
+PROFILE
+
 # Install APT packages
 log_info "Installing system dependencies via APT"
 "${BP_DIR}/bin/install_binaries" "$BUILD_DIR" "$CACHE_DIR"
