@@ -86,7 +86,6 @@ teardown() {
 }
 
 @test "indent: adds proper indentation" {
-    run bash -c 'echo "test line" | indent'
-    [ "$status" -eq 0 ]
-    [[ "$output" == *"       test line"* ]]
+    result=$(echo "test line" | indent)
+    [[ "$result" == "       test line" ]]
 }
