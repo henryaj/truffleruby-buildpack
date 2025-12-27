@@ -15,6 +15,15 @@ export BUNDLE_GEMFILE="${HOME}/Gemfile"
 export BUNDLE_WITHOUT="development:test"
 export BUNDLE_DEPLOYMENT="true"
 
+# JVM memory settings for TruffleRuby (JVM variant)
+# Limit heap size to fit in Heroku's 512MB limit
+export JAVA_OPTS="${JAVA_OPTS:--Xmx400m -Xms256m}"
+export TRUFFLERUBYOPT="--jvm.Xmx400m"
+
+# Set locale to avoid encoding warnings
+export LANG="${LANG:-en_US.UTF-8}"
+export LC_ALL="${LC_ALL:-en_US.UTF-8}"
+
 # Also add rbenv shims if they exist
 if [[ -d "${HOME}/.rbenv/shims" ]]; then
     export PATH="${HOME}/.rbenv/shims:$PATH"
