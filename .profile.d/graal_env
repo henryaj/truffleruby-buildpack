@@ -9,6 +9,12 @@ export GEM_HOME="${HOME}/vendor/bundle/truffleruby/3.2.0"
 export GEM_PATH="${GEM_HOME}:${TRUFFLERUBY_HOME}/lib/ruby/gems/3.2.0"
 export PATH="${GEM_HOME}/bin:${TRUFFLERUBY_HOME}/bin:$PATH"
 
+# Bundler configuration for runtime
+export BUNDLE_PATH="${HOME}/vendor/bundle"
+export BUNDLE_GEMFILE="${HOME}/Gemfile"
+export BUNDLE_WITHOUT="development:test"
+export BUNDLE_DEPLOYMENT="true"
+
 # Also add rbenv shims if they exist
 if [[ -d "${HOME}/.rbenv/shims" ]]; then
     export PATH="${HOME}/.rbenv/shims:$PATH"
