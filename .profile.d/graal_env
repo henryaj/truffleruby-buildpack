@@ -17,8 +17,8 @@ export BUNDLE_DEPLOYMENT="true"
 
 # JVM memory settings for TruffleRuby (JVM variant)
 # Limit heap size to fit in Heroku's 512MB limit
-export JAVA_OPTS="${JAVA_OPTS:--Xmx400m -Xms256m}"
-export TRUFFLERUBYOPT="--jvm.Xmx400m"
+export JAVA_OPTS="${JAVA_OPTS:--Xmx380m -Xms200m -XX:+UseSerialGC}"
+export JDK_JAVA_OPTIONS="${JDK_JAVA_OPTIONS:--Xmx380m -Xms200m -XX:+UseSerialGC}"
 
 # Set locale to avoid encoding warnings
 export LANG="${LANG:-en_US.UTF-8}"
